@@ -1,0 +1,177 @@
+dms_cntl.c:	dms_addr= (Addr4882_t)fxsched_ptr->dms_addr[dms_index];
+dms_cntl.c:	board	= fxsched_ptr->dms_board[dms_index];
+dmsbin_scan.c:		fxsched_ptr->binlabel[dms_index][0],fxsched_ptr->binlabel[dms_index][1],
+dmsbin_scan.c:		fxsched_ptr->binlabel[dms_index][2],fxsched_ptr->binlabel[dms_index][3],
+dmsbin_scan.c:		fxsched_ptr->binlabel[dms_index][4],fxsched_ptr->binlabel[dms_index][5],
+dmsbin_scan.c:		fxsched_ptr->binlabel[dms_index][6],fxsched_ptr->binlabel[dms_index][7]);
+dmsbin_scan.c:		fxsched_ptr->binlabel[dms_index][8],
+dmsbin_scan.c:		fxsched_ptr->binlabel[dms_index][9],
+dmsbin_scan.c:		fxsched_ptr->binlabel[dms_index][10],
+dmsbin_scan.c:		fxsched_ptr->binlabel[dms_index][11],
+dmsbin_scan.c:		fxsched_ptr->binlabel[dms_index][12],
+dmsbin_scan.c:		fxsched_ptr->binlabel[dms_index][13],
+dmsbin_scan.c:		fxsched_ptr->binlabel[dms_index][14],
+dmsbin_scan.c:		fxsched_ptr->binlabel[dms_index][15]);
+fxsync_info.c:				fxsched_ptr->dms_board[id - 1] = brd;
+fxsync_info.c:				fxsched_ptr->dms_addr[id - 1] = address;
+fxsync_info.c:				fxsched_ptr->tcu_board[id] = brd;
+fxsync_info.c:				fxsched_ptr->tcu_addr[id] = address;
+fxsync_info.c:			fxsched_ptr->dms_id[address] = id;
+fxsync_info.c:				fxsched_ptr->pos[address]	= 32;
+fxsync_info.c:				fxsched_ptr->dir_id[id-1][0] = address; }
+fxsync_info.c:				fxsched_ptr->pos[address] = 33;
+fxsync_info.c:				fxsched_ptr->dir_id[id-1][1] = address; }
+fxsync_print.c:		if( fxsched_ptr->st_num[pb_index] > 0 ){
+fxsync_print.c:		if( fxsched_ptr->st_num[pb_index] > 0 ){
+fxsync_print.c:		if( fxsched_ptr->st_num[pb_index] > 0 ){
+fxsync_print.c:			if( st_index < fxsched_ptr->st_num[pb_index] ){
+fxsync_print.c:				soy2dhms( fxsched_ptr->st_soy[pb_index][st_index],
+fxsync_print.c:				soy2dhms( fxsched_ptr->et_soy[pb_index][st_index],
+fxsync_print.c:					st_hh, st_mm, st_ss, fxsched_ptr->st_idr[pb_index][st_index],
+fxsync_print.c:					et_hh, et_mm, et_ss, fxsched_ptr->et_idr[pb_index][st_index],
+fxsync_print.c:					fxsched_ptr->dur_sec[pb_index][st_index] );
+fxsync_print.c:			if( st_index < fxsched_ptr->st_num[pb_index] ){
+fxsync_print.c:				soy2dhms( fxsched_ptr->st_soy[pb_index][st_index],
+fxsync_print.c:				soy2dhms( fxsched_ptr->et_soy[pb_index][st_index],
+fxsync_print.c:					st_hh, st_mm, st_ss, fxsched_ptr->st_idr[pb_index][st_index],
+fxsync_print.c:					et_hh, et_mm, et_ss, fxsched_ptr->et_idr[pb_index][st_index],
+fxsync_print.c:					fxsched_ptr->dur_sec[pb_index][st_index] );
+fxsync_print.c:			for(st_index=0; st_index<fxsched_ptr->st_num[pb_index]; st_index++){
+fxsync_print.c:				st_soy = fxsched_ptr->st_soy[pb_index][st_index] + SECDAY;
+fxsync_print.c:				et_soy = fxsched_ptr->et_soy[pb_index][st_index] + SECDAY;
+fxsync_print.c:			for(st_index=0; st_index<fxsched_ptr->st_num[pb_index]; st_index++){
+fxsync_print.c:				st_soy = fxsched_ptr->st_soy[pb_index][st_index] + SECDAY;
+fxsync_print.c:				tape_index = fxsched_ptr->tape_id[pb_index][st_index];
+fxsync_print.c:					fxsched_ptr->tape_label[pb_index][tape_index]);
+fxsync_print.c:				fxsched_ptr->binlabel[dms_index][bin_index]);
+fxsync_ql.c:			sprintf( pg_text, "%02d", fxsched_ptr->tcu_addr[index]);
+fxsync_ql.c:			sprintf( pg_text, "%02d", fxsched_ptr->dms_addr[index]);
+fxsync_ql.c:			sprintf( pg_text, "%02d", fxsched_ptr->dms_id[index]);
+fxsync_ql.c:			sprintf( pg_text, "%02d", fxsched_ptr->pos[index]);
+fxsync_replay.c:		if( fxsched_ptr->st_num[pb_index] > 0 ){
+fxsync_replay.c:		if( fxsched_ptr->st_num[pb_index] > 0 ){
+fxsync_replay.c:			if( st_index < fxsched_ptr->st_num[pb_index] ){
+fxsync_replay.c:				soy2dhms( fxsched_ptr->st_soy[pb_index][st_index],
+fxsync_replay.c:				soy2dhms( fxsched_ptr->et_soy[pb_index][st_index],
+fxsync_replay.c:					fxsched_ptr->st_idr[pb_index][st_index],
+fxsync_replay.c:					fxsched_ptr->et_idr[pb_index][st_index],
+fxsync_replay.c:					fxsched_ptr->dur_sec[pb_index][st_index] );
+fxsync_replay.c:			if( st_index < fxsched_ptr->st_num[pb_index] ){
+fxsync_replay.c:				soy2dhms( fxsched_ptr->st_soy[pb_index][st_index],
+fxsync_replay.c:				soy2dhms( fxsched_ptr->et_soy[pb_index][st_index],
+fxsync_replay.c:					st_hh, st_mm, st_ss, fxsched_ptr->st_idr[pb_index][st_index],
+fxsync_replay.c:					et_hh, et_mm, et_ss, fxsched_ptr->et_idr[pb_index][st_index],
+fxsync_replay.c:					fxsched_ptr->dur_sec[pb_index][st_index] );
+fxsync_replay.c:			for(st_index=0; st_index< fxsched_ptr->st_num[pb_index]; st_index++){
+fxsync_replay.c:				st_soy = fxsched_ptr->st_soy[pb_index][st_index] + SECDAY;
+fxsync_replay.c:				et_soy = fxsched_ptr->et_soy[pb_index][st_index] + SECDAY;
+fxsync_replay.c:			for(st_index=0; st_index<fxsched_ptr->st_num[pb_index]; st_index++){
+fxsync_replay.c:				st_soy = fxsched_ptr->st_soy[pb_index][st_index] + SECDAY;
+fxsync_replay.c:				tape_index = fxsched_ptr->tape_id[pb_index][st_index];
+fxsync_replay.c:					fxsched_ptr->tape_label[pb_index][tape_index]);
+fxsync_replay.c:				fxsched_ptr->binlabel[dms_index][bin_index]);
+fxsync_start.c:	fxsched_ptr->tcu_cntl_exec |= 0x01;				/* Enable Master Cntl	*/
+fxsync_start.c:			fxsched_ptr->tcu_cntl_exec |= TRUE_MASK;/* Enable Slave Cntl	*/
+fxsync_start.c:		fxsched_ptr->tcu_pid[0] =  getpid();
+fxsync_start.c:				cmd[0], fxsched_ptr->tcu_pid[0] );
+fxsync_start.c:		fxsched_ptr->tcu_cntl_exec &= 0x01;
+fxsync_start.c:				fxsched_ptr->dms_pid[index] =  getpid();
+fxsync_start.c:					cmd[0], fxsched_ptr->dms_pid[index], cmd[0], cmd[1] );
+fxsync_start.c:			if(	(fxsched_ptr->tcu_cntl_exec & (0x01<<index)) != 0){
+fxsync_start.c:				fxsched_ptr->tcu_cntl_exec &= FALSE_MASK;
+fxsync_start.c:					fxsched_ptr->tcu_pid[index] =  getpid();
+fxsync_start.c:						cmd[0], fxsched_ptr->tcu_pid[index], index );
+fxsync_start.c:						fxsched_ptr->tcu_cntl_exec |= TRUE_MASK;
+fxsync_view.c:		if( fxsched_ptr->st_num[pb_index] > 0 ){
+fxsync_view.c:		if( fxsched_ptr->st_num[pb_index] > 0 ){
+fxsync_view.c:			if( st_index < fxsched_ptr->st_num[pb_index] ){
+fxsync_view.c:				soy2dhms( fxsched_ptr->st_soy[pb_index][st_index],
+fxsync_view.c:				soy2dhms( fxsched_ptr->et_soy[pb_index][st_index],
+fxsync_view.c:					fxsched_ptr->st_idr[pb_index][st_index],
+fxsync_view.c:					fxsched_ptr->et_idr[pb_index][st_index],
+fxsync_view.c:					fxsched_ptr->dur_sec[pb_index][st_index] );
+fxsync_view.c:			if( st_index < fxsched_ptr->st_num[pb_index] ){
+fxsync_view.c:				soy2dhms( fxsched_ptr->st_soy[pb_index][st_index],
+fxsync_view.c:				soy2dhms( fxsched_ptr->et_soy[pb_index][st_index],
+fxsync_view.c:					st_hh,st_mm, st_ss, fxsched_ptr->st_idr[pb_index][st_index],
+fxsync_view.c:					et_hh,et_mm, et_ss, fxsched_ptr->et_idr[pb_index][st_index],
+fxsync_view.c:					fxsched_ptr->dur_sec[pb_index][st_index] );
+fxsync_view.c:			for(st_index=0; st_index<fxsched_ptr->st_num[pb_index]; st_index++){
+fxsync_view.c:				st_soy = fxsched_ptr->st_soy[pb_index][st_index] + SECDAY;
+fxsync_view.c:				et_soy = fxsched_ptr->et_soy[pb_index][st_index] + SECDAY;
+fxsync_view.c:				soy2dhms( fxsched_ptr->st_soy[pb_index][st_index],
+fxsync_view.c:				soy2dhms( fxsched_ptr->et_soy[pb_index][st_index],
+fxsync_view.c:			for(st_index=0; st_index<fxsched_ptr->st_num[pb_index]; st_index++){
+fxsync_view.c:				st_soy = fxsched_ptr->st_soy[pb_index][st_index] + SECDAY;
+fxsync_view.c:				tape_index = fxsched_ptr->tape_id[pb_index][st_index];
+fxsync_view.c:					fxsched_ptr->tape_label[pb_index][tape_index]);
+fxsync_view.c:				fxsched_ptr->binlabel[dms_index][bin_index]);
+read_pbsched.c:		fxsched_ptr->tape_num[pb_index] = tape_num;
+read_pbsched.c:				dms_index = fxsched_ptr->dms_id[pb_index] - 1;
+read_pbsched.c:				sprintf( fxsched_ptr->tape_label[pb_index][tape_index],
+read_pbsched.c:				fxsched_ptr->st_num[prev_pb_id]   = scan_counter+1;
+read_pbsched.c:		fxsched_ptr->master_tssepc[pb_id][scan_counter]	= st_tss;
+read_pbsched.c:		fxsched_ptr->tape_id[pb_id][scan_counter]   = tape_counter;
+read_pbsched.c:		fxsched_ptr->rec_rate[pb_id][scan_counter] 	= rec_rate[pb_id];
+read_pbsched.c:		fxsched_ptr->play_rate[pb_id][scan_counter] = pb_rate;
+read_pbsched.c:		fxsched_ptr->rec_utc[pb_id][scan_counter] 	= rec_utc;
+read_pbsched.c:		fxsched_ptr->play_utc[pb_id][scan_counter] 	= play_utc;
+read_pbsched.c:		fxsched_ptr->st_idr[pb_id][scan_counter] 	= st_idr;
+read_pbsched.c:		fxsched_ptr->et_tss[pb_id][scan_counter] 	= et_tss;
+read_pbsched.c:		fxsched_ptr->et_idr[pb_id][scan_counter] 	= et_idr;
+read_pbsched.c:		fxsched_ptr->st_soy[pb_id][scan_counter] = st_soy;
+read_pbsched.c:		fxsched_ptr->et_soy[pb_id][scan_counter] = et_soy;
+read_pbsched.c:		fxsched_ptr->dur_sec[pb_id][scan_counter] = dur_sec;
+read_pbsched.c:		fxsched_ptr->st_num[pb_id]   = scan_counter+1;
+scan_bindat.c:			fxsched_ptr->binlabel[dms_id][bin_index] );
+scan_bindat.c:		if(strstr( fxsched_ptr->binlabel[dms_id][bin_index],
+sched_shift.c:	prev_tapeid = fxsched_ptr->tape_id[pb_id][*st_index_ptr];
+sched_shift.c:	while( (tcu_soy > fxsched_ptr->et_soy[pb_id][*st_index_ptr])
+sched_shift.c:		&& ( (*st_index_ptr) <= fxsched_ptr->st_num[pb_id]) ){
+sched_shift.c:	if(*st_index_ptr >= fxsched_ptr->st_num[pb_id]){
+sched_shift.c:	if(fxsched_ptr->tape_id[pb_id][*st_index_ptr] != prev_tapeid ){
+store_tape.c:	dms_index = fxsched_ptr->dms_id[pb_id] - 1;
+tape_load_request.c:	dms_id	= fxsched_ptr->dms_id[pb_id];
+tape_load_request.c:	pb_index = (fxsched_ptr->pos[pb_id]) % 2;
+tape_load_request.c:		fxsched_ptr->tape_label[pb_id][tape_index], &bin_id );
+tape_load_request.c:			fxsched_ptr->tape_label[pb_id][tape_index], dms_id );
+tape_load_request.c:			fxsync_ptr->cart_dest[dms_index][pb_index] = fxsched_ptr->pos[pb_id];
+tape_load_request.c:			fxsync_ptr->tape_dest[pb_id] = fxsched_ptr->pos[pb_id];
+tape_search.c:	target_idr	= fxsched_ptr->st_idr[pb_id][st_index] - 100;
+tcu_master_cntl.c:	tcu_addr= (Addr4882_t)fxsched_ptr->tcu_addr[pb_id];
+tcu_master_cntl.c:	board	= fxsched_ptr->tcu_board[pb_id];
+tcu_reset.c:	sprintf(cmd, "kill -KILL %d\0", fxsched_ptr->tcu_pid[pb_id]);
+tcu_reset.c:	fxsched_ptr->tcu_cntl_exec |= TRUE_MASK;
+tcu_rewind_cntl.c:	tcu_addr	= (Addr4882_t)fxsched_ptr->tcu_addr[pb_id];
+tcu_rewind_cntl.c:	board		= fxsched_ptr->tcu_board[pb_id];
+tcu_rewind_cntl.c:	play_rate	= fxsched_ptr->play_rate[pb_id][0];
+tcu_rewind_cntl.c:	obs_rate	= fxsched_ptr->rec_rate[pb_id][0];
+tcu_rewind_cntl.c:	pb_index	= (fxsched_ptr->pos[pb_id]) % 2;
+tcu_rewind_cntl.c:	prev_tapeid = fxsched_ptr->tape_id[pb_id][st_index];
+tcu_rewind_cntl.c:		if(tape_index >= fxsched_ptr->tape_num[pb_id]){
+tcu_slave_cntl.c:	tcu_addr	= (Addr4882_t)fxsched_ptr->tcu_addr[pb_id];
+tcu_slave_cntl.c:	board		= fxsched_ptr->tcu_board[pb_id];
+tcu_slave_cntl.c:	play_rate	= fxsched_ptr->play_rate[pb_id][0];
+tcu_slave_cntl.c:	obs_rate	= fxsched_ptr->rec_rate[pb_id][0];
+tcu_slave_cntl.c:	pb_index	= (fxsched_ptr->pos[pb_id]) % 2;
+tcu_slave_cntl.c:				fxsched_ptr->st_soy[pb_id][ST_INDEX] += RESYNC_OFS;
+tcu_slave_cntl.c:				fxsched_ptr->st_idr[pb_id][ST_INDEX] += retry_tss;
+tcu_slave_cntl.c:				fxsched_ptr->master_tssepc[pb_id][ST_INDEX] += retry_tss;
+tcu_slave_cntl.c:				if( fxsched_ptr->st_soy[pb_id][ST_INDEX] > (fxsched_ptr->et_soy[pb_id][ST_INDEX] - RESYNC_OFS)){
+tcu_slave_cntl.c:			et_idr = fxsched_ptr->et_idr[pb_id][ST_INDEX];
+tcu_slave_cntl.c:			( tcu_soy > fxsched_ptr->st_soy[pb_id][ST_INDEX]) &&
+tcu_slave_cntl.c:			( tcu_soy < fxsched_ptr->et_soy[pb_id][ST_INDEX]) ){
+tcu_slave_cntl.c:			tss_diff = fxsched_ptr->master_tssepc[pb_id][ST_INDEX]
+tcu_slave_cntl.c:					-  fxsched_ptr->st_idr[pb_id][ST_INDEX];
+tcu_slave_cntl.c:					< fxsched_ptr->et_soy[pb_id][ST_INDEX])){
+tcu_slave_cntl.c:						tss_diff = fxsched_ptr->master_tssepc[pb_id][ST_INDEX]
+tcu_slave_cntl.c:								-  fxsched_ptr->st_idr[pb_id][ST_INDEX];
+tcu_slave_cntl.c:									< fxsched_ptr->et_soy[pb_id][ST_INDEX])){
+tcu_slave_cntl.c:				fxsched_ptr->st_soy[pb_id][ST_INDEX] = tcu_soy + RETRY_OFS;
+tcu_slave_cntl.c:				fxsched_ptr->st_idr[pb_id][ST_INDEX]
+tcu_slave_cntl.c:				fxsched_ptr->master_tssepc[pb_id][ST_INDEX]
+tcu_slave_cntl.c:		if(tcu_soy > fxsched_ptr->et_soy[pb_id][ST_INDEX]){
+tlplay.c:#define	RESERVE_OFFSET	16*fxsched_ptr->play_rate[pb_id][st_index]	
+tlplay.c:	st_tss	= fxsched_ptr->master_tssepc[pb_id][st_index];
+tlplay.c:	st_idr	= fxsched_ptr->st_idr[pb_id][st_index];
+tlplay.c:	et_idr	= fxsched_ptr->et_idr[pb_id][st_index];

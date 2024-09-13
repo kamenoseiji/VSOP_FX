@@ -1,0 +1,29 @@
+#-------DEVICE--ID------BORAD---ADDRESS
+GPIB	DMS		1		1		1
+GPIB	DMS		2		1		2
+GPIB	DMS		3		1		3
+GPIB	DMS		4		1		4
+GPIB	DMS		5		1		5
+GPIB	TCU		0		0		1
+GPIB	TCU		1		0		2
+GPIB	TCU		2		0		3
+GPIB	TCU		3		0		4
+GPIB	TCU		4		0		5
+GPIB	TCU		5		0		6
+GPIB	TCU		6		0		7
+GPIB	TCU		7		0		8
+GPIB	TCU		8		0		9
+GPIB	TCU		9		0		10
+GPIB	TCU		10		0		11
+#
+#-------DMS-----POS-----DIR
+DMS		1		DR2		1
+DMS		1		DR1		2
+DMS		2		DR2		3
+DMS		2		DR1		4
+DMS		3		DR2		5
+DMS		3		DR1		6
+DMS		4		DR2		7
+DMS		4		DR1		8
+DMS		5		DR2		9
+DMS		5		DR1		10

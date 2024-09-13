@@ -1,0 +1,413 @@
+/*********************************************************
+**	SPLINE_DELAY.C :	Plot Antenna-Based Delay Data	**
+**														**
+**	AUTHOR  : KAMENO Seiji								**
+**	CREATED : 1996/6/27									**
+*********************************************************/
+#include <stdio.h>
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <math.h>
+#include <cpgplot.h>
+#include "obshead.inc"
+
+#define	HDUNIT		3
+#define	MAX_ANT		10
+#define	SECDAY		86400
+#define	GEN_MAX		1.0e15
+
+#define ARG_OBSNAME	1
+#define ARG_CALNAME	2
+#define ARG_SOLINT	3
+#define ARG_PGDEV	4
+#define ARG_STN		5
+
+MAIN__(argc, argv)
+	int		argc;			/* Number of Arguments */
+	char	**argv;			/* Pointer of Arguments */
+{
+	struct	header		obs;			/* OBS HEADDER						*/
+	struct	head_obj	*obj_ptr;		/* Pointer of Objects Header		*/
+	struct	head_obj	*first_obj_ptr;	/* First Pointer of Objects Header	*/
+	struct	head_stn	*stn_ptr;		/* Pointer of Station Header		*/
+	struct	head_stn	*first_stn_ptr;	/* First Pointer of Station Header	*/
+	struct	fcal_data	*stn_fcal_ptr;	/* Pointer of Fringe Residual Data	*/
+	int		fcal_ptr[MAX_ANT];			/* Pointer of CLOCK data			*/
+	int		delay_coeff[MAX_ANT];		/* Poiner of Spline Coefficient		*/
+	int		rate_coeff[MAX_ANT];		/* Poiner of Spline Coefficient		*/
+	int		time_node[MAX_ANT];			/* Node Points in spline			*/
+	int		time_rate_node[MAX_ANT];	/* Node Points in spline			*/
+
+	/*-------- INDEX --------*/
+	int		index;						/* Index for Station				*/
+	int		stn_index;					/* Index for Station				*/
+	int		data_index;					/* Index for time-series of Data	*/
+	int		time_ptr_ptr[MAX_ANT];		/* Index for Time Series			*/
+	int		delay_ptr_ptr[MAX_ANT];		/* Index for Time Series			*/
+	int		rate_ptr_ptr[MAX_ANT];		/* Index for Time Series			*/
+	int		acc_ptr_ptr[MAX_ANT];		/* Index for Time Series			*/
+	int		delaywgt_ptr_ptr[MAX_ANT];	/* Index for Time Series			*/
+	int		ratewgt_ptr_ptr[MAX_ANT];	/* Index for Time Series			*/
+	int		accwgt_ptr_ptr[MAX_ANT];	/* Index for Time Series			*/
+	int		stnid_in_cfs[MAX_ANT];		/* Station Index in CFS				*/
+
+	/*-------- TOTAL NUMBER --------*/
+	int		ssnum;						/* Number of Sub-Stream				*/
+	int		slave_stn_num;				/* Number of Slave Station			*/
+	int		delaydata_num[MAX_ANT];		/* Number of Delay Data for Each STN*/
+	int		node_num[MAX_ANT];			/* Number of Node Points in Spline	*/
+	int		node_rate_num[MAX_ANT];		/* Number of Node Points in Spline	*/
+	int		req_stn_num;				/* Requested Number of Stations		*/
+
+	/*-------- IDENTIFIER --------*/
+	int		shrd_obj_id;				/* Shared Memory ID for Source HD	*/
+	int		shrd_stn_id;				/* Shared Memory ID for Station HD	*/
+	int		obj_id;						/* OBJECT ID						*/
+	int		refant_id;					/* REFANT ID in CFS					*/
+	int		lunit;						/* Unit Number of CFS File			*/
+	int		recid;						/* Record ID in CFS					*/
+	int		ret;						/* Return Code from CFS Library		*/
+	int		err_code;					/* Error Code from PGPLOT			*/
+
+	/*-------- GENERAL VALIABLE --------*/
+	double	loss;						/* Loss Factor						*/
+	double	mjd_min,	mjd_max;		/* Max and Min of MJD				*/
+	double	rate_min,	rate_max;		/* Max and Min of Rate				*/
+	double	delay_min,	delay_max;		/* Max and Min of Delay				*/
+	double	acc_min,	acc_max;		/* Max and Min of Acc				*/
+	double	curr_rate_min,	curr_rate_max;		/* Max and Min of Rate		*/
+	double	curr_delay_min,	curr_delay_max;		/* Max and Min of Delay		*/
+	double	curr_time_min,	curr_time_max;		/* Max and Min of MJD		*/
+	double	epoch;						/* Clock Parameter Epoch			*/
+	double	*time_ptr;					/* Pointer of Time for each Station	*/
+	double	*delay_ptr;					/* Pointer of Delay for each Station*/
+	double	*rate_ptr;					/* Pointer of Rate for each Station	*/
+	double	*acc_ptr;					/* Pointer of Acc for each Station	*/
+	double	*delaywgt_ptr;				/* Pointer of Delay Error 			*/
+	double	*ratewgt_ptr;				/* Pointer of Rate Error			*/
+	double	*accwgt_ptr;				/* Pointer of Acc Error				*/
+	int		solint;						/* Solution Interval [sec]			*/
+	double	clk_ofs;
+	double	clk_rat;
+	double	clk_acc;
+	double	mjd_epoch;
+	int		dhms_epoch;
+	int		year_epoch;
+	int		doy_epoch;
+	int		hour_epoch;
+	int		min_epoch;
+	double	sec_epoch;
+
+	/*-------- SSL2 VALIABLE --------*/
+	int		icon;						/* Condition Code					*/
+	int		isw;						/* Control Code						*/
+	double	*vw;						/* Pointer of Working Area			*/
+	double	poly_coeff[2];				/* Polynominal Coeff				*/
+
+	/*-------- STRING VALIABLE --------*/
+	char	fname[128];					/* File Name of CFS Files			*/
+	char	omode[2];					/* Access Mode of CFS Files			*/
+	char	pg_dev[256];				/* PGPLOT Device Name				*/
+	char	stn_list[MAX_ANT][16];		/* Station Name List				*/
+	char	line_buf[256];				/* 1-line Buffer					*/
+
+
+	memset( fcal_ptr, 0, sizeof(fcal_ptr) );
+/*
+------------------------ CHECK FOR INPUT ARGUMENT
+*/
+	if( argc < 4 ){
+		printf("USAGE : spline_delay [OBS_NAME] [SRC_NAME] [SOLINT] [DEVICE] [STN_NAME1] [STN_NAME2] ... !!\n");
+		printf("  OBS_NAME ------ Observation Code [e.g. D96135]\n");
+		printf("  SRC_NAME ------ Object Name\n");
+		printf("  SOLINT -------- Solutino Interval\n");
+		printf("  DEVICE -------- PGPLOT Device \n");
+		printf("  STN_NAME ------ STATION NAMEs (`all' is acceptable)\n");
+		exit(0);
+	}
+	mjd_epoch = 5.0e4;
+	clk_ofs   = 0.0;
+	clk_rat   = 0.0;
+	clk_acc   = 0.0;
+
+#ifdef RESIDUAL
+	printf("/CLOCK/  -> ");	gets( line_buf ); sscanf(line_buf, "%lf", &clk_ofs);
+	printf("/CLKRATE/-> ");	gets( line_buf ); sscanf(line_buf, "%lf", &clk_rat);
+	printf("/CLKACC/ -> ");	gets( line_buf ); sscanf(line_buf, "%lf", &clk_acc);
+	printf("YEAR        ");	gets( line_buf ); sscanf(line_buf, "%d", &year_epoch);
+	printf("[DDDHHMMSS] ");	gets( line_buf ); sscanf(line_buf, "%d", &dhms_epoch);
+
+	clk_rat *= 1.0e-6;		/*-------- psec/sec -> microsec/sec --------*/
+	clk_acc *= 1.0e-9;		/*-------- fsec/sec/sec -> microsec/sec/sec ----*/
+
+	doy_epoch  = (int)(dhms_epoch / 1000000);
+	hour_epoch = (int)((dhms_epoch % 1000000) /10000);
+	min_epoch  = (int)((dhms_epoch % 10000) /100);
+	sec_epoch  = (double)(dhms_epoch % 100);
+
+	doy2fmjd( year_epoch, doy_epoch, hour_epoch, min_epoch, sec_epoch,
+				&mjd_epoch);
+
+
+	printf("%03d%02d%02d%02d/CLOCK/ %lf\n",
+			doy_epoch, hour_epoch, min_epoch, (int)sec_epoch, clk_ofs);
+	printf("%03d%02d%02d%02d/CLKRATE/ %lf\n",
+			doy_epoch, hour_epoch, min_epoch, (int)sec_epoch, clk_rat* 1.0e6);
+	printf("%03d%02d%02d%02d/CLKACC/ %lf\n",
+			doy_epoch, hour_epoch, min_epoch, (int)sec_epoch, clk_acc* 1.0e9);
+	printf("MJD = %lf\n", mjd_epoch);
+#endif
+
+
+	cfs000_( &ret );			cfs_ret( 000, ret );
+	cfs020_( &ret );			cfs_ret( 020, ret );
+	cfs006_( argv[ARG_OBSNAME], &ret, strlen( argv[ARG_OBSNAME] ));	cfs_ret( 006, ret );
+
+	mjd_max		= -GEN_MAX;	mjd_min		=  GEN_MAX;
+	rate_max	= -GEN_MAX;	rate_min	=  GEN_MAX;
+	delay_max	= -GEN_MAX;	delay_min	=  GEN_MAX;
+	acc_max		= -GEN_MAX;	acc_min		=  GEN_MAX;
+
+	/*-------- OPEN PGPLOT DEVICE --------*/
+	if( strstr(argv[ARG_PGDEV], "/cps") != NULL){
+		sprintf( pg_dev, "pgplot.ps/vcps");
+		printf( "SAVE PGPLOT TO %s\n", pg_dev );
+		cpgbeg(1, pg_dev, 1, 1);
+		cpgscrn(0, "White", &err_code); /* COLOR DEFINISHON */
+		cpgscrn(13, "Black", &err_code);         /* COLOR DEFINISHON */
+		cpgscrn(14, "ivory", &err_code);     /* COLOR DEFINISHON */
+		cpgscrn(15, "Yellow", &err_code);        /* COLOR DEFINISHON */
+
+	} else if( strstr(argv[ARG_PGDEV], "/ps") != NULL){
+		sprintf( pg_dev, "pgplot.ps/vps");
+		printf( "SAVE PGPLOT TO %s\n", pg_dev );
+		cpgbeg(1, pg_dev, 1, 1);
+
+		cpgscrn(0, "White", &err_code);		/* COLOR DEFINISHON */
+		cpgscrn(13, "Black", &err_code);	/* COLOR DEFINISHON */
+		cpgscrn(14, "Gray", &err_code);		/* COLOR DEFINISHON */
+		cpgscrn(15, "Black", &err_code);	/* COLOR DEFINISHON */
+
+	} else {
+		cpgbeg(1, argv[ARG_PGDEV], 1, 1);
+		cpgscrn(0, "DarkSlateGray", &err_code); /* COLOR DEFINISHON */
+		cpgscrn(13, "White", &err_code);         /* COLOR DEFINISHON */
+		cpgscrn(14, "SlateGray", &err_code);     /* COLOR DEFINISHON */
+		cpgscrn(15, "Yellow", &err_code);        /* COLOR DEFINISHON */
+	}
+	cpgeras();
+
+	/*-------- FILE OPEN --------*/
+	lunit	= HDUNIT;
+	sprintf( fname, "HEADDER" );
+	sprintf( omode, "r" );
+	cfs287_( fname, &ret, strlen(fname) );	cfs_ret( 287, ret );
+	cfs103_( &lunit, fname, omode, &ret, strlen(fname), strlen(omode) );
+	cfs_ret( 103, ret );
+
+	/*-------- READ OBSHEAD --------*/
+	read_obshead( lunit, &obs, &obj_ptr, &stn_ptr, &shrd_obj_id, &shrd_stn_id );
+
+	first_obj_ptr	= obj_ptr;
+	first_stn_ptr	= stn_ptr;
+
+	/*-------- LINK STN-ID to AUTOCORR PAIR ID --------*/
+	acorr_pair( &obs, stn_ptr, &ssnum, &loss );
+
+	/*-------- SELECT STATION --------*/
+	stn_index = 0;
+
+	/*-------- SCAN in CFS STATION LIST --------*/
+	if( strstr(argv[argc - 1], "all") != NULL ){
+		stn_ptr = first_stn_ptr;
+		while(stn_ptr != NULL){
+			printf("STATION %-10s: ID = %2d\n",
+				stn_ptr->stn_name, stn_ptr->stn_index );
+
+			/*-------- AVOID DUMMY --------*/
+			if(stn_ptr->acorr_index != -1){
+
+				/*-------- READ DELAY DATA --------*/
+				delaydata_num[stn_index] = read_delay(
+					stn_ptr->stn_index,		argv[ARG_CALNAME],
+					&fcal_ptr[stn_index],	&curr_time_min,	&curr_time_max,
+					&curr_rate_min,		&curr_rate_max,
+					&curr_delay_min,	&curr_delay_max,
+					&acc_min,	&acc_max);
+
+				if( delaydata_num[stn_index] > 0 ){
+					/*-------- SLAVE ANT --------*/
+					if(curr_delay_min <delay_min){delay_min = curr_delay_min;}
+					if(curr_delay_max >delay_max){delay_max = curr_delay_max;}
+					if(curr_rate_min <rate_min){rate_min = curr_rate_min;}
+					if(curr_rate_max >rate_max){rate_max = curr_rate_max;}
+					if(curr_time_min <mjd_min){mjd_min = curr_time_min;}
+					if(curr_time_max >mjd_max){mjd_max = curr_time_max;}
+
+					strcpy(stn_list[stn_index], stn_ptr->stn_name);
+					stn_fcal_ptr = (struct fcal_data *)fcal_ptr[stn_index];
+					refant_id = stn_fcal_ptr->refant;
+
+					stn_index ++;
+				}
+			}
+			stn_ptr = stn_ptr->next_stn_ptr;
+		}	/*-------- End of While --------*/
+	} else {
+		/*-------- SCAN STATION LIST --------*/
+		for( index=0; index< argc - ARG_STN; index++ ){
+			stn_ptr = first_stn_ptr;
+			while(stn_ptr != NULL){
+				if(strstr(stn_ptr->stn_name, argv[index+ARG_STN]) != NULL){
+					break;
+				}
+				stn_ptr = stn_ptr->next_stn_ptr;
+			}
+
+			/*-------- Specified Station is not Found --------*/
+			if( stn_ptr == NULL ){
+				printf("[%s] is not found in Station List !!\n",
+						argv[index+ARG_STN]); 
+
+			/*-------- Specified Station is Found --------*/
+			} else if(stn_ptr->acorr_index == -1){
+				printf("Do NOT Select DUMMY !!\n");
+
+			/*-------- Specified Station is Found --------*/
+			} else {
+				stnid_in_cfs[stn_index] = stn_ptr->stn_index;
+				printf("STATION %-10s: ID = %2d\n",
+					stn_ptr->stn_name, stn_ptr->stn_index );
+
+				/*-------- READ DELAY DATA --------*/
+				delaydata_num[stn_index] = read_delay(
+					stn_ptr->stn_index,		argv[ARG_CALNAME],
+					&fcal_ptr[stn_index],	&curr_time_min,	&curr_time_max,
+					&curr_rate_min,		&curr_rate_max,
+					&curr_delay_min,	&curr_delay_max,
+					&acc_min,	&acc_max);
+
+				if( delaydata_num[stn_index] > 0 ){
+					/*-------- SLAVE ANT --------*/
+					if(curr_delay_min <delay_min){delay_min = curr_delay_min;}
+					if(curr_delay_max >delay_max){delay_max = curr_delay_max;}
+					if(curr_rate_min <rate_min){rate_min = curr_rate_min;}
+					if(curr_rate_max >rate_max){rate_max = curr_rate_max;}
+					if(curr_time_min <mjd_min){mjd_min = curr_time_min;}
+					if(curr_time_max >mjd_max){mjd_max = curr_time_max;}
+
+					strcpy(stn_list[stn_index], stn_ptr->stn_name);
+					stn_fcal_ptr = (struct fcal_data *)fcal_ptr[stn_index];
+					refant_id = stn_fcal_ptr->refant;
+
+					stn_index ++;
+				}
+			}
+		}
+
+	}
+	slave_stn_num	= stn_index;
+
+#ifdef DEBUG
+	delay_min = -1.0;
+	delay_max =  1.0;
+	rate_min  = -2.0e-4;
+	rate_max  =  0.5e-4;
+#endif
+
+	shmctl( shrd_obj_id, IPC_RMID, 0 );
+	shmctl( shrd_stn_id, IPC_RMID, 0 );
+
+	printf(" Number of Slave Station = %d\n", slave_stn_num);
+
+	for(stn_index=0; stn_index<slave_stn_num; stn_index++){
+
+		/*-------- STORE DELAY DATA --------*/
+		restore_delay( fcal_ptr[stn_index], delaydata_num[stn_index],
+			&time_ptr_ptr[stn_index], &delay_ptr_ptr[stn_index],
+			&rate_ptr_ptr[stn_index], &acc_ptr_ptr[stn_index],
+			&delaywgt_ptr_ptr[stn_index],	&ratewgt_ptr_ptr[stn_index],
+			&accwgt_ptr_ptr[stn_index]);
+
+		solint	= atoi( argv[ARG_SOLINT] );
+
+		/*-------- CALC SPLINE COEFFICIENT for DELAY DATA --------*/
+		real_spline( time_ptr_ptr[stn_index],	delay_ptr_ptr[stn_index],
+			delaywgt_ptr_ptr[stn_index],		delaydata_num[stn_index], 
+			(double)solint, &node_num[stn_index],
+			(int)(&delay_coeff[stn_index]),	(int)(&time_node[stn_index]) );
+
+		/*-------- CALC SPLINE COEFFICIENT for RATE DATA --------*/
+		real_spline( time_ptr_ptr[stn_index],	rate_ptr_ptr[stn_index],
+			ratewgt_ptr_ptr[stn_index],		delaydata_num[stn_index], 
+			(double)solint, &node_rate_num[stn_index],
+			(int)(&rate_coeff[stn_index]),	(int)(&time_rate_node[stn_index]) );
+	}
+
+
+	/*-------- PLOT DELAY and RATE DATA with SMOOTH SPLINE FUNCTION --------*/
+	cpg_spline_delay( &obs, first_obj_ptr, stn_list, refant_id, fcal_ptr,
+				first_stn_ptr, node_num, time_node, delay_coeff, rate_coeff,
+				mjd_min, mjd_max, rate_min, rate_max,
+				delay_min,	delay_max,	acc_min,	acc_max,
+				mjd_epoch, clk_ofs, clk_rat, clk_acc );
+/*
+	cpg_spline_delay( &obs, first_obj_ptr, stn_list, refant_id, fcal_ptr,
+				first_stn_ptr, node_num, time_node, delay_coeff, rate_coeff,
+				mjd_min, mjd_max, rate_min, rate_max,
+				delay_min,	delay_max,	acc_min,	acc_max);
+*/
+
+
+	/*-------- RESIDUAL CLOCK, RATE and ACC --------*/
+	for(stn_index=0; stn_index<slave_stn_num; stn_index++){
+
+		printf("-------- CLOCK CORRECTION FOR STATION ID %d --------\n",
+			stn_index + 2);
+
+		/*-------- RELATIVE TIME from the EPOCH --------*/
+		epoch = SECDAY* (mjd_min - (int)mjd_min);
+		printf(" EPOCH = %02d:%02d:%02d\n",
+			(int)(epoch/3600), (int)(epoch/60)%60, ((int)epoch)%60 );
+		time_ptr =  (double *)time_ptr_ptr[stn_index];
+		for(data_index=0; data_index<delaydata_num[stn_index]; data_index++){
+			time_ptr[data_index] -= epoch;
+		}
+
+		/*-------- LEAST SQUARE for RATE and ACC --------*/
+		isw= 1;
+		vw = (double *)malloc( 7* delaydata_num[stn_index]* sizeof(double));
+		dlesq1_( time_ptr, rate_ptr_ptr[stn_index],
+			&delaydata_num[stn_index],		&isw,
+			ratewgt_ptr_ptr[stn_index],		poly_coeff,
+			vw, &icon);
+
+		printf(" ADD %8.3lf in /CLKACC/ \n",
+				poly_coeff[1]* 1.0e9);
+		printf(" ADD %8.3lf in /CLKRATE/\n",
+				poly_coeff[0]* 1.0e6);
+
+		/*-------- LEAST SQUARE for CLOCK --------*/
+		delay_ptr =  (double *)delay_ptr_ptr[stn_index];
+		for(data_index=0; data_index<delaydata_num[stn_index]; data_index++){
+			delay_ptr[data_index] -= time_ptr[data_index]*
+				(poly_coeff[1]* time_ptr[data_index] + poly_coeff[0]) ;
+		}
+
+		isw = 0;
+		dlesq1_( time_ptr, delay_ptr,
+			&delaydata_num[stn_index],		&isw,
+			delaywgt_ptr_ptr[stn_index],	poly_coeff,
+			vw, &icon);
+
+		printf(" ADD %8.3lf in /CLOCK/\n", poly_coeff[0]);
+
+		free(vw);
+
+	}
+
+	cpgend();
+	return(0);
+}
